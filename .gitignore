@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+
+# generated files
+generated
+
+# misc
+.DS_Store
