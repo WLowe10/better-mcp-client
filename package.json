@@ -6,6 +6,7 @@
 		"test": "vitest run",
 		"test-watch": "vitest watch",
 		"test-coverage": "vietst run --coverage",
+		"typecheck": "tsc --noEmit",
 		"schema:generate-types": "json2ts -i ./schemas/mcp.json -o ./src/generated/types.ts --unreachableDefinitions",
 		"schema:generate-validators": "tsx ./scripts/compile-validators.ts"
 	},
@@ -23,9 +24,30 @@
 				"types": "./dist/index.d.cts",
 				"default": "./dist/index.cjs"
 			}
+		},
+		"./http": {
+			"import": {
+				"types": "./dist/http/index.d.ts",
+				"default": "./dist/http/index.js"
+			},
+			"require": {
+				"types": "./dist/http/index.d.cts",
+				"default": "./dist/http/index.cjs"
+			}
+		},
+		"./stdio": {
+			"import": {
+				"types": "./dist/stdio/index.d.ts",
+				"default": "./dist/stdio/index.js"
+			},
+			"require": {
+				"types": "./dist/stdio/index.d.cts",
+				"default": "./dist/stdio/index.cjs"
+			}
 		}
 	},
 	"devDependencies": {
+		"@types/cross-spawn": "^6.0.6",
 		"@vitest/coverage-v8": "3.2.4",
 		"ajv": "^8.17.1",
 		"ajv-cli": "^5.0.0",
@@ -34,5 +56,8 @@
 		"tsup": "^8.5.0",
 		"typescript": "^5.9.2",
 		"vitest": "^3.2.4"
+	},
+	"dependencies": {
+		"cross-spawn": "^7.0.6"
 	}
 }

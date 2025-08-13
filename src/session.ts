@@ -25,9 +25,11 @@ export interface SessionOptions {
 	client: Client;
 }
 
+// food for thought: should the session id be updated if it changes? It very well could...
+
 export class Session {
-	private lastRequestId: number = 0;
 	private sessionId: string | null = null;
+	private lastRequestId: number = 0;
 	private client: Client;
 
 	constructor(opts: SessionOptions) {

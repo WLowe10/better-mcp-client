@@ -1,4 +1,4 @@
-import type { RequestId } from "../generated/types";
+import type { RequestId } from "./generated/types";
 
 export interface TransportRequestMetadata {
 	/** The ID of the request */

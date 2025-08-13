@@ -23,7 +23,7 @@ import type {
 	Result,
 	SubscribeRequest,
 } from "./generated/types";
-import type { Transport, TransportRequestMetadata, TransportResponse } from "./transport/transport";
+import type { Transport, TransportRequestMetadata, TransportResponse } from "./transport";
 import {
 	isValidCallToolResult,
 	isValidCompleteResult,

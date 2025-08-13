@@ -1,5 +1,5 @@
 import { UnauthorizedError } from "../errors";
-import type { Transport, TransportRequest } from "../transport/transport";
+import type { Transport, TransportRequest } from "../transport";
 import type { HttpAdapter } from "./adapter";
 
 const resourceMetadataRegex = /resource_metadata="([^"]*)"/;
