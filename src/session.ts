@@ -59,6 +59,7 @@ export class Session {
 
 		const sessionId = response.meta?.sessionId;
 
+		// note to self: what if a user uses a Session with a transport that doesn't require a session id. Should we even force it here then?
 		if (typeof sessionId !== "string") {
 			throw new Error("Failed to get session ID from initialize response");
 		}
