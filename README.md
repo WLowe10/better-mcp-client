@@ -32,7 +32,8 @@ npm install @better-mcp/client
 ### Over HTTP
 
 ```ts
-import { Client, HttpTransport, FetchAdapter } from "@better-mcp/client";
+import { Client } from "@better-mcp/client";
+import { HttpTransport, FetchAdapter } "@better-mcp/client/http"
 
 const transport = new HttpTransport({
 	adapter: new FetchAdapter(),
@@ -58,6 +59,35 @@ await client.listTools(
 		sessionId,
 	}
 );
+```
+
+### Over stdio
+
+```ts
+import { Client } from "@better-mcp/client";
+import { StdioTransport } "@better-mcp/client/stdio"
+
+const transport = new StdioTransport({
+	command: "node",
+	args: ["./dist/main.js"]
+});
+
+const client = new Client({
+	info: {
+		name: "my-mcp-client",
+		version: "0.0.1",
+	},
+	transport,
+});
+
+// start the process
+transport.start();
+
+// initialize client
+const initializeResult = await client.initialize();
+
+// list tools
+await client.listTools();
 ```
 
 ### Session
