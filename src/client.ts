@@ -25,6 +25,7 @@ import type {
 	SubscribeRequest,
 	ClientCapabilities,
 	RequestId,
+	CancelledNotification,
 } from "./generated/types";
 import type { Transport, TransportRequestMetadata, TransportResponse } from "./transport";
 import {
@@ -131,6 +132,26 @@ export class Client {
 			{
 				method: "ping",
 				requestId: meta?.requestId,
+			},
+			meta
+		);
+
+		if (!isValidEmptyResult(result.data)) {
+			throw new Error("Invalid JSON-RPC response");
+		}
+
+		return result;
+	}
+
+	public async sendRequestCancelledNotification(
+		params: CancelledNotification["params"],
+		meta?: TransportRequestMetadata
+	): Promise<TransportResponse<Result>> {
+		const result = await this.sendRequest(
+			{
+				method: "notifications/cancelled",
+				requestId: meta?.requestId,
+				params,
 			},
 			meta
 		);

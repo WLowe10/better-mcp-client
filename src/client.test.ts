@@ -108,6 +108,29 @@ describe("Operations", () => {
 		// there is no other path to test for
 	});
 
+	describe("sendRequestCancelledNotification", () => {
+		it("should return the result when valid", async () => {
+			const expectedResult: Result = {};
+
+			dummyTransport.send.mockResolvedValueOnce({
+				data: {
+					id: 1,
+					jsonrpc: "2.0",
+					result: expectedResult,
+				},
+			});
+
+			const result = await client.sendRequestCancelledNotification({
+				requestId: 1,
+			});
+
+			expect(result.data).toEqual(expectedResult);
+		});
+
+		// note: the sendRequestCancelledNotification method returns an empty result, so any jsonrpc result object will work
+		// there is no other path to test for
+	});
+
 	describe("setLoggingLevel", () => {
 		it("should return the result when valid", async () => {
 			const expectedResult: Result = {};
