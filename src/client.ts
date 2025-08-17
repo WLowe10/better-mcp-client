@@ -1,5 +1,6 @@
 import { LATEST_PROTOCOL_VERSION } from "./constants";
 import type {
+	InitializeRequest,
 	CallToolRequest,
 	CallToolResult,
 	CompleteRequest,
@@ -22,6 +23,7 @@ import type {
 	ReadResourceResult,
 	Result,
 	SubscribeRequest,
+	ClientCapabilities,
 } from "./generated/types";
 import type { Transport, TransportRequestMetadata, TransportResponse } from "./transport";
 import {
@@ -51,19 +53,29 @@ function assertValidJsonRpcResponse(response: unknown): asserts response is JSON
 
 export interface ClientOptions {
 	info: Implementation;
+	capabilities?: ClientCapabilities;
 	transport: Transport;
 }
 
+// export type ClientInitializeParams =
+
 export class Client {
 	private info: Implementation;
+	private capabilities: ClientCapabilities | null;
 	private transport: Transport;
 
 	constructor(opts: ClientOptions) {
 		this.info = opts.info;
 		this.transport = opts.transport;
+		this.capabilities = opts.capabilities ?? null;
+	}
+
+	public getCapabilities(): ClientCapabilities | null {
+		return this.capabilities;
 	}
 
 	public async initialize(
+		params?: Partial<InitializeRequest["params"]>,
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<InitializeResult>> {
 		const response = await this.transport.send({
@@ -74,7 +86,8 @@ export class Client {
 				params: {
 					protocolVersion: LATEST_PROTOCOL_VERSION,
 					clientInfo: this.info,
-					capabilities: {},
+					capabilities: this.capabilities ?? {},
+					...params,
 				},
 			}),
 		});

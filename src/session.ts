@@ -49,9 +49,12 @@ export class Session {
 	}
 
 	public async initialize(): Promise<InitializeResult> {
-		const response = await this.client.initialize({
-			requestId: ++this.lastRequestId,
-		});
+		const response = await this.client.initialize(
+			{},
+			{
+				requestId: ++this.lastRequestId,
+			}
+		);
 
 		const sessionId = response.meta?.sessionId;
 
