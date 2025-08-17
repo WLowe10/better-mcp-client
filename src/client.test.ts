@@ -49,7 +49,7 @@ it("throws when server responds with jsonrpc error", async () => {
 		meta: {},
 	});
 
-	await expect(client.ping()).rejects.toThrowError("Server error: Method not found");
+	await expect(client.ping()).rejects.toThrowError("Server Error: -32601: Method not found");
 });
 
 describe("Operations", () => {

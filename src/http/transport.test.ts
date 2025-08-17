@@ -11,6 +11,15 @@ const transport = new HttpTransport({
 	adapter: dummyHttpAdapter,
 });
 
+function createReadableStreamFromText(text: string) {
+	return new ReadableStream({
+		start(controller) {
+			controller.enqueue(new TextEncoder().encode(text));
+			controller.close();
+		},
+	});
+}
+
 it("should forward custom headers if included", async () => {
 	const transport = new HttpTransport({
 		url: "https://test.com/mcp",
@@ -22,8 +31,10 @@ it("should forward custom headers if included", async () => {
 
 	dummyHttpAdapter.requestJson.mockResolvedValueOnce({
 		status: 200,
-		headers: {},
-		body: {},
+		headers: {
+			"content-type": "application/json",
+		},
+		body: createReadableStreamFromText("{}"),
 	});
 
 	await transport.send({ data: "{}", meta: {} });
@@ -44,9 +55,10 @@ it("should parse the mcp session id if available", async () => {
 	dummyHttpAdapter.requestJson.mockResolvedValueOnce({
 		status: 200,
 		headers: {
+			"content-type": "application/json",
 			"mcp-session-id": "12345",
 		},
-		body: {},
+		body: createReadableStreamFromText("{}"),
 	});
 
 	const response = await transport.send({ data: "{}", meta: {} });
@@ -62,7 +74,7 @@ it("should parse the protected resource metadata url if available", async () => 
 		headers: {
 			"www-authenticate": `resource_metadata="${expectedUrl}"`,
 		},
-		body: {},
+		body: createReadableStreamFromText("{}"),
 	});
 
 	// this is to make sure that the assertions in the catch block are reached
