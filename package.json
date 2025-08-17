@@ -5,7 +5,7 @@
 		"build": "tsup",
 		"test": "vitest run",
 		"test-watch": "vitest watch",
-		"test-coverage": "vietst run --coverage",
+		"test-coverage": "vitest run --coverage",
 		"typecheck": "tsc --noEmit",
 		"schema:generate-types": "json2ts -i ./schemas/mcp.json -o ./src/generated/types.ts --unreachableDefinitions",
 		"schema:generate-validators": "tsx ./scripts/compile-validators.ts"
