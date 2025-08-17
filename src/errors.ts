@@ -2,12 +2,6 @@ import type { JSONRPCError } from "./generated/types";
 
 export interface UnauthorizedErrorOptions {
 	messsage?: string;
-
-	/**
-	 * The OAuth URL for the server
-	 *
-	 * note: If one is not found in the response headers, the default will be site_url + "/oauth/authorize"
-	 */
 	resourceMetadataUrl?: string;
 }
 
