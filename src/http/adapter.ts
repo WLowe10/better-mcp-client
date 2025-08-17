@@ -8,14 +8,7 @@ export interface HttpRequest {
 export interface HttpResponse {
 	status: number;
 	headers: Record<string, string>;
-	body?: unknown;
-	stream?: AsyncGenerator<string, void, unknown>;
-}
-
-export interface StreamHttpResponse {
-	status: number;
-	headers: Record<string, string>;
-	stream: AsyncGenerator<string, void, unknown>;
+	body: ReadableStream<Uint8Array> | null;
 }
 
 export interface HttpAdapter {

@@ -2,6 +2,30 @@ import { UnauthorizedError } from "../errors";
 import type { Transport, TransportRequest } from "../transport";
 import type { HttpAdapter } from "./adapter";
 
+async function collectTextFromReadableStream(
+	stream: ReadableStream<Uint8Array>,
+	isStreaming: boolean = false
+): Promise<string> {
+	const reader = stream.getReader();
+	const decoder = new TextDecoder();
+
+	let text = "";
+
+	while (true) {
+		const readResult = await reader.read();
+
+		if (readResult.done) {
+			break;
+		}
+
+		text += decoder.decode(readResult.value, {
+			stream: isStreaming,
+		});
+	}
+
+	return text;
+}
+
 const resourceMetadataRegex = /resource_metadata="([^"]*)"/;
 
 function parseResourceMetadataUrlFromHeader(header: string): string | null {
@@ -52,6 +76,10 @@ export class HttpTransport implements Transport {
 			body: request.data,
 		});
 
+		if (!response.body) {
+			throw new Error("Missing response body");
+		}
+
 		// unauthenticated, check for auth URL in response headers
 		if (response.status === 401) {
 			const wwwAuthenticate = response.headers["www-authenticate"];
@@ -67,10 +95,44 @@ export class HttpTransport implements Transport {
 			});
 		}
 
+		const contentType = response.headers["content-type"];
+
+		if (!contentType) {
+			throw new Error("Missing content-type header");
+		}
+
+		let dataStr;
+
+		if (contentType === "application/json") {
+			dataStr = await collectTextFromReadableStream(response.body);
+		} else if (contentType === "text/event-stream") {
+			const bodyText = await collectTextFromReadableStream(response.body, true);
+
+			// const responseText = await collectTextFromStreamingResponse(response);
+			const eventLines = bodyText.split("\n");
+			const dataLine = eventLines.find((line) => line.startsWith("data: "));
+
+			if (!dataLine) {
+				throw new Error("Data not found in event");
+			}
+
+			dataStr = dataLine.slice(6); // 6 is the length of the "data: " prefix
+		} else {
+			throw new Error(`Unsupported content-type: ${contentType}`);
+		}
+
+		let dataObj;
+
+		try {
+			dataObj = JSON.parse(dataStr);
+		} catch {
+			throw new Error("Failed to parse response JSON");
+		}
+
 		const responseSessionId = response.headers["mcp-session-id"];
 
 		return {
-			data: response.body,
+			data: dataObj,
 			meta: {
 				sessionId: responseSessionId,
 			},

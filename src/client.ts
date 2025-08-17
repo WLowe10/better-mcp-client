@@ -87,7 +87,8 @@ export class Client {
 	): Promise<TransportResponse<Result>> {
 		const response = await this.transport.send({
 			data: JSON.stringify({
-				id: opts?.requestId,
+				jsonrpc: "2.0",
+				id: opts.requestId,
 				method: opts.method,
 				params: opts.params,
 			}),
