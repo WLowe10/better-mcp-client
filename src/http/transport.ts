@@ -26,6 +26,18 @@ async function collectTextFromReadableStream(
 	return text;
 }
 
+function parseFirstDataFromEventStreamText(text: string): string | null {
+	const eventLines = text.split("\n");
+	const dataLine = eventLines.find((line) => line.startsWith("data: "));
+
+	if (!dataLine) {
+		return null;
+	}
+
+	// 6 is the length of the "data: " prefix
+	return dataLine.slice(6);
+}
+
 const resourceMetadataRegex = /resource_metadata="([^"]*)"/;
 
 function parseResourceMetadataUrlFromHeader(header: string): string | null {
@@ -107,18 +119,15 @@ export class HttpTransport implements Transport {
 			dataStr = await collectTextFromReadableStream(response.body);
 		} else if (contentType === "text/event-stream") {
 			const bodyText = await collectTextFromReadableStream(response.body, true);
+			const parsedDataString = parseFirstDataFromEventStreamText(bodyText);
 
-			// const responseText = await collectTextFromStreamingResponse(response);
-			const eventLines = bodyText.split("\n");
-			const dataLine = eventLines.find((line) => line.startsWith("data: "));
-
-			if (!dataLine) {
-				throw new Error("Data not found in event");
+			if (!parsedDataString) {
+				throw new Error("Failed to parse data in event stream");
 			}
 
-			dataStr = dataLine.slice(6); // 6 is the length of the "data: " prefix
+			dataStr = parsedDataString;
 		} else {
-			throw new Error(`Unsupported content-type: ${contentType}`);
+			throw new Error(`Unrecognized content-type: ${contentType}`);
 		}
 
 		let dataObj;
