@@ -1,4 +1,5 @@
 import { LATEST_PROTOCOL_VERSION } from "./constants";
+import { ServerError } from "./errors";
 import type {
 	InitializeRequest,
 	CallToolRequest,
@@ -49,7 +50,7 @@ function assertValidJsonRpcResponse(response: unknown): asserts response is JSON
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		throw new Error(`Server error: ${response.error.message}`);
+		throw new ServerError(response.error);
 	}
 }
 
