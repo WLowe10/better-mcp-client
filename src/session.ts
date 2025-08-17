@@ -19,6 +19,7 @@ import type {
 	ReadResourceResult,
 	SubscribeRequest,
 	ListResourceTemplatesResult,
+	CancelledNotification,
 } from "./generated/types";
 
 export interface SessionOptions {
@@ -52,7 +53,7 @@ export class Session {
 		const response = await this.client.initialize(
 			{},
 			{
-				requestId: ++this.lastRequestId,
+				requestId: this.getNextRequestId(),
 			}
 		);
 
@@ -67,7 +68,18 @@ export class Session {
 
 	public async ping(): Promise<Result> {
 		const response = await this.client.ping({
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
+			sessionId: this.sessionId ?? undefined,
+		});
+
+		return response.data;
+	}
+
+	public async sendRequestCancelledNotification(
+		params: CancelledNotification["params"]
+	): Promise<Result> {
+		const response = await this.client.sendRequestCancelledNotification(params, {
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -76,7 +88,7 @@ export class Session {
 
 	public async setLoggingLevel(level: LoggingLevel): Promise<Result> {
 		const response = await this.client.setLoggingLevel(level, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -85,7 +97,7 @@ export class Session {
 
 	public async sendInitializedNotification(): Promise<Result> {
 		const response = await this.client.sendInitializedNotification({
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -94,7 +106,7 @@ export class Session {
 
 	public async sendRootsListChangedNotification(): Promise<Result> {
 		const response = await this.client.sendRootsListChangedNotification({
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -103,7 +115,7 @@ export class Session {
 
 	public async complete(params: CompleteRequest["params"]): Promise<CompleteResult> {
 		const response = await this.client.complete(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -112,7 +124,7 @@ export class Session {
 
 	public async listTools(params?: ListToolsRequest["params"]): Promise<ListToolsResult> {
 		const response = await this.client.listTools(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -121,7 +133,7 @@ export class Session {
 
 	public async callTool(params: CallToolRequest["params"]): Promise<CallToolResult> {
 		const response = await this.client.callTool(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -130,7 +142,7 @@ export class Session {
 
 	public async listPrompts(params?: ListPromptsRequest["params"]): Promise<ListPromptsResult> {
 		const response = await this.client.listPrompts(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -139,7 +151,7 @@ export class Session {
 
 	public async getPrompt(params: GetPromptRequest["params"]): Promise<GetPromptResult> {
 		const response = await this.client.getPrompt(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -150,7 +162,7 @@ export class Session {
 		params?: ListResourcesRequest["params"]
 	): Promise<ListResourcesResult> {
 		const response = await this.client.listResources(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -159,7 +171,7 @@ export class Session {
 
 	public async readResource(params: ReadResourceRequest["params"]): Promise<ReadResourceResult> {
 		const response = await this.client.readResource(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -168,7 +180,7 @@ export class Session {
 
 	public async subscribeResource(params: SubscribeRequest["params"]): Promise<Result> {
 		const response = await this.client.subscribeResource(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
@@ -177,7 +189,7 @@ export class Session {
 
 	public async unsubscribeResource(params: SubscribeRequest["params"]): Promise<Result> {
 		const response = await this.client.unsubscribeResource(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId! ?? undefined,
 		});
 
@@ -188,10 +200,14 @@ export class Session {
 		params?: ListResourcesRequest["params"]
 	): Promise<ListResourceTemplatesResult> {
 		const response = await this.client.listResourceTemplates(params, {
-			requestId: ++this.lastRequestId,
+			requestId: this.getNextRequestId(),
 			sessionId: this.sessionId ?? undefined,
 		});
 
 		return response.data;
+	}
+
+	private getNextRequestId() {
+		return ++this.lastRequestId;
 	}
 }
