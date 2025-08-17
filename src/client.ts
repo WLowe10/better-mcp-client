@@ -24,6 +24,7 @@ import type {
 	Result,
 	SubscribeRequest,
 	ClientCapabilities,
+	RequestId,
 } from "./generated/types";
 import type { Transport, TransportRequestMetadata, TransportResponse } from "./transport";
 import {
@@ -58,6 +59,11 @@ export interface ClientOptions {
 }
 
 // export type ClientInitializeParams =
+export interface ClientSendRequestOptions {
+	method: string;
+	requestId?: RequestId;
+	params?: Record<string, unknown>;
+}
 
 export class Client {
 	private info: Implementation;
@@ -74,385 +80,323 @@ export class Client {
 		return this.capabilities;
 	}
 
+	public async sendRequest(
+		opts: ClientSendRequestOptions,
+		meta?: TransportRequestMetadata
+	): Promise<TransportResponse<Result>> {
+		const response = await this.transport.send({
+			data: JSON.stringify({
+				id: opts?.requestId,
+				method: opts.method,
+				params: opts.params,
+			}),
+			meta,
+		});
+
+		assertValidJsonRpcResponse(response.data);
+
+		return {
+			data: response.data.result,
+			meta: response.meta,
+		};
+	}
+
 	public async initialize(
 		params?: Partial<InitializeRequest["params"]>,
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<InitializeResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "initialize",
+				requestId: meta?.requestId,
 				params: {
 					protocolVersion: LATEST_PROTOCOL_VERSION,
 					clientInfo: this.info,
 					capabilities: this.capabilities ?? {},
 					...params,
 				},
-			}),
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidInitializeResult(response.data.result)) {
+		if (!isValidInitializeResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<InitializeResult>;
 	}
 
 	public async ping(meta?: TransportRequestMetadata): Promise<TransportResponse<Result>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
+		const result = await this.sendRequest(
+			{
 				method: "ping",
-			}),
-			meta,
-		});
+				requestId: meta?.requestId,
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidEmptyResult(response.data.result)) {
+		if (!isValidEmptyResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result;
 	}
 
 	public async setLoggingLevel(
 		level: LoggingLevel,
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<Result>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
+		const result = await this.sendRequest(
+			{
 				method: "logging/setLevel",
+				requestId: meta?.requestId,
 				params: {
 					level,
 				},
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidEmptyResult(response.data.result)) {
+		if (!isValidEmptyResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result;
 	}
 
 	public async sendInitializedNotification(
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<Result>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "notifications/initialized",
-			}),
-			meta,
-		});
+				requestId: meta?.requestId,
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidEmptyResult(response.data.result)) {
+		if (!isValidEmptyResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result;
 	}
 
 	public async sendRootsListChangedNotification(
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<Result>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "notifications/roots/list_changed",
-			}),
-			meta,
-		});
+				requestId: meta?.requestId,
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidEmptyResult(response.data.result)) {
+		if (!isValidEmptyResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result;
 	}
 
 	public async complete(
 		params: CompleteRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<CompleteResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "completion/complete",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidCompleteResult(response.data.result)) {
+		if (!isValidCompleteResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<CompleteResult>;
 	}
 
 	public async listTools(
 		params?: ListToolsRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<ListToolsResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "tools/list",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidListToolsResult(response.data.result)) {
+		if (!isValidListToolsResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<ListToolsResult>;
 	}
 
 	public async callTool(
 		params: CallToolRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<CallToolResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "tools/call",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidCallToolResult(response.data.result)) {
+		if (!isValidCallToolResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<CallToolResult>;
 	}
 
 	public async listPrompts(
 		params?: ListPromptsRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<ListPromptsResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "prompts/list",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidListPromptsResult(response.data.result)) {
+		if (!isValidListPromptsResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<ListPromptsResult>;
 	}
 
 	public async getPrompt(
 		params: GetPromptRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<GetPromptResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "prompts/get",
+				requestId: meta?.requestId,
 				params,
-			}),
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidGetPromptResult(response.data.result)) {
+		if (!isValidGetPromptResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<GetPromptResult>;
 	}
 
 	public async listResources(
 		params?: ListResourcesRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<ListResourcesResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "resources/list",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidListResourcesResult(response.data.result)) {
+		if (!isValidListResourcesResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<ListResourcesResult>;
 	}
 
 	public async readResource(
 		params: ReadResourceRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<ReadResourceResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "resources/read",
+				requestId: meta?.requestId,
 				params,
-			}),
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidReadResourceResult(response.data.result)) {
+		if (!isValidReadResourceResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<ReadResourceResult>;
 	}
 
 	public async subscribeResource(
 		params: SubscribeRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<Result>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
+		const result = await this.sendRequest(
+			{
 				method: "resources/subscribe",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidEmptyResult(response.data.result)) {
+		if (!isValidEmptyResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result;
 	}
 
 	public async unsubscribeResource(
 		params: SubscribeRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<Result>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
+		const result = await this.sendRequest(
+			{
 				method: "resources/unsubscribe",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidEmptyResult(response.data.result)) {
+		if (!isValidEmptyResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result;
 	}
 
 	public async listResourceTemplates(
 		params?: ListResourceTemplatesRequest["params"],
 		meta?: TransportRequestMetadata
 	): Promise<TransportResponse<ListResourceTemplatesResult>> {
-		const response = await this.transport.send({
-			data: JSON.stringify({
-				id: meta?.requestId,
-				jsonrpc: "2.0",
+		const result = await this.sendRequest(
+			{
 				method: "resources/templates/list",
+				requestId: meta?.requestId,
 				params,
-			}),
-			meta,
-		});
+			},
+			meta
+		);
 
-		assertValidJsonRpcResponse(response.data);
-
-		if (!isValidListResourceTemplatesResult(response.data.result)) {
+		if (!isValidListResourceTemplatesResult(result.data)) {
 			throw new Error("Invalid JSON-RPC response");
 		}
 
-		return {
-			data: response.data.result,
-			meta: response.meta,
-		};
+		return result as TransportResponse<ListResourceTemplatesResult>;
 	}
 }
