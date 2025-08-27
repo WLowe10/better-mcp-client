@@ -1,7 +1,20 @@
 {
 	"name": "better-mcp-client",
 	"type": "module",
-	"version": "0.0.1",
+	"description": "A better client for MCP",
+	"version": "0.0.2",
+	"license": "MIT",
+	"author": {
+		"name": "Wes Lowe",
+		"email": "wesley.jlowe10@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/WLowe10/better-mcp-client"
+	},
+	"keywords": [
+		"MCP"
+	],
 	"scripts": {
 		"build": "tsup",
 		"test": "vitest run",
@@ -13,6 +26,7 @@
 	},
 	"files": [
 		"package.json",
+		"README.md",
 		"dist"
 	],
 	"exports": {

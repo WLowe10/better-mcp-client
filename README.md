@@ -4,7 +4,7 @@ This library is a TypeScript client implementation for the [Model Context Protoc
 
 What makes this client the best?
 
-- zero dependencies
+- lightweight
 - works in any runtime (browser, node, etc)
 - separation of stateless and stateful client features
 
@@ -20,11 +20,11 @@ As of `2025-08-12`, there are multiple reasons to use `better-mcp-client` over `
 ### Install
 
 ```sh
-pnpm add @better-mcp/client
+pnpm add better-mcp-client
 # or
-yarn add @better-mcp/client
+yarn add better-mcp-client
 # or
-npm install @better-mcp/client
+npm install better-mcp-client
 ```
 
 ## Examples
@@ -32,8 +32,8 @@ npm install @better-mcp/client
 ### Over HTTP
 
 ```ts
-import { Client } from "@better-mcp/client";
-import { HttpTransport, FetchAdapter } "@better-mcp/client/http"
+import { Client } from "better-mcp-client";
+import { HttpTransport, FetchAdapter } "better-mcp-client/http"
 
 const transport = new HttpTransport({
 	adapter: new FetchAdapter(),
@@ -64,8 +64,8 @@ await client.listTools(
 ### Over stdio
 
 ```ts
-import { Client } from "@better-mcp/client";
-import { StdioTransport } "@better-mcp/client/stdio"
+import { Client } from "better-mcp-client";
+import { StdioTransport } "better-mcp-client/stdio"
 
 const transport = new StdioTransport({
 	command: "node",
