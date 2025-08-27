@@ -1,6 +1,7 @@
 {
-	"name": "@better-mcp/client",
+	"name": "better-mcp-client",
 	"type": "module",
+	"version": "0.0.1",
 	"scripts": {
 		"build": "tsup",
 		"test": "vitest run",
